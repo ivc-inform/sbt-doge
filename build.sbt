@@ -1,11 +1,9 @@
 lazy val commonSettings = Seq(
   version in ThisBuild := "0.1.6-SNAPSHOT",
-  // git.baseVersion in ThisBuild := "0.1.6",
   organization in ThisBuild := "com.eed3si9n"
 )
 
 lazy val root = (project in file(".")).
-  // enablePlugins(GitVersioning).
   settings(
     commonSettings,
     sbtPlugin := true,

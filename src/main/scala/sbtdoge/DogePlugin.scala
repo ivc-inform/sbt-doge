@@ -1,12 +1,13 @@
 package sbtdoge
 
-import sbt._, Keys._, syntax._
-import Cross.{ requireSession }
-import sbt.complete.{ DefaultParsers, Parser }
+import sbt.Cross.requireSession
+import sbt.Def.{ScopedKey, Setting}
+import sbt.Keys._
+import sbt._
+import sbt.complete.{DefaultParsers, Parser}
 import sbt.internal.CommandStrings
-import CommandStrings.{ SwitchCommand, switchHelp }
+import sbt.internal.CommandStrings.{SwitchCommand, switchHelp}
 import sbt.internal.inc.ScalaInstance
-import Def.{ ScopedKey, Setting }
 
 object DogePlugin extends AutoPlugin {
   import Doge._
