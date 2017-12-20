@@ -1,9 +1,8 @@
-package sbtdoge
+package sbt
 
 import sbt.Cross.requireSession
-import sbt.Def.{ScopedKey, Setting}
+import sbt.Def.ScopedKey
 import sbt.Keys._
-import sbt._
 import sbt.complete.{DefaultParsers, Parser}
 import sbt.internal.CommandStrings
 import sbt.internal.CommandStrings.{SwitchCommand, switchHelp}
@@ -36,8 +35,6 @@ object CrossPerProjectPlugin extends AutoPlugin {
 
   override lazy val projectSettings: Seq[Def.Setting[_]] = Seq(
     commands ~= { existing => Seq(
-      overrideSwitchCommand,
-      overrideCrossBuildCommand,
       runWithCommand("+++")
     ) ++ existing }
   )
@@ -85,9 +82,6 @@ object Doge {
   def crossBuildCommand(commandName: String): Command =
     Command.arb(requireSession(crossParser(commandName)), crossHelp(commandName))(crossBuildCommandImpl)
 
-  def overrideCrossBuildCommand: Command =
-    Command.arb(requireSession(Cross.crossParser), CommandStrings.crossHelp)(crossBuildCommandImpl)
-
   def crossBuildCommandImpl(state: State, command: String): State = {
     val x = Project.extract(state)
     import x._
@@ -121,16 +115,13 @@ object Doge {
         case (version, projects) =>
           // First switch scala version, then use the all command to run the command on each project concurrently
           Seq("wow " + version, projects.map(_ + "/" + aggCommand).mkString("all ", " ", ""))
-      } ::: switchBackCommand ::: state
+      }.toList ::: switchBackCommand ::: state
     }
   }
 
   // Better implementation of ++ operator
   def switchCommand(commandName: String): Command =
     Command.arb(requireSession(switchParser(commandName)), switchHelp)(switchCommandImpl)
-
-  def overrideSwitchCommand: Command =
-    Command.arb(requireSession(Cross.switchParser), switchHelp)(switchCommandImpl)
 
   def switchCommandImpl(state: State, args: (String, String)): State = {
     val (arg, command) = args
@@ -168,7 +159,7 @@ object Doge {
           case (project, versions)
             if versions.exists(v => CrossVersion.binaryScalaVersion(v) == binaryVersion) =>
             project.project + "/" + command
-        } ::: switchBackCommand ::: fixedState
+        }.toList ::: switchBackCommand ::: fixedState
     }
 
   }
@@ -288,7 +279,7 @@ object Doge {
 
   private[this] def excludeKeys(keys: Set[AttributeKey[_]]): Setting[_] => Boolean =
     _.key match {
-      case ScopedKey(Scope(_, Global, Global, _), key) if keys.contains(key) => true
+      case ScopedKey(Scope(_, This, This, _), key) if keys.contains(key) => true
       case _ => false
     }
 
